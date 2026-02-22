@@ -3,12 +3,16 @@ import { useParams } from "react-router-dom";
 import { Star, Copy, Check, ExternalLink, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { getBusinessBySlug, Business } from "@/lib/db";
+import { generateReview as generateLocalReview, reviewTemplates, type Language } from "@/lib/reviewGenerator";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { toast } from "sonner";
 
 const ReviewPage = () => {
+  const { t, language } = useLanguage();
   const { businessSlug } = useParams<{ businessSlug: string }>();
-  const [business, setBusiness] = useState<any>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
   const [stars, setStars] = useState(5);
   const [review, setReview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -17,37 +21,43 @@ const ReviewPage = () => {
 
   useEffect(() => {
     const fetchBusiness = async () => {
-      const { data, error } = await supabase
-        .from("businesses")
-        .select("*")
-        .eq("slug", businessSlug)
-        .single();
+      const data = await getBusinessBySlug(businessSlug!);
 
-      if (error || !data) {
+      if (!data) {
         setLoading(false);
         return;
       }
       setBusiness(data);
       setLoading(false);
-      generateReview(data, 5);
+      // Use instant template generation on first load
+      generateReviewInstant(data, 5);
     };
     fetchBusiness();
   }, [businessSlug]);
 
-  const generateReview = async (biz: any, starCount: number) => {
+  // Instant synchronous review generation using templates
+  const generateReviewInstant = (biz: Business, starCount: number) => {
+    const rating = Math.max(1, Math.min(5, Math.round(starCount))) as 1 | 2 | 3 | 4 | 5;
+    const templates = reviewTemplates[language as Language][rating];
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    const generatedReview = template.replace(/{business}/g, biz.name);
+    setReview(generatedReview);
+  };
+
+  // Async review generation (for regenerate button)
+  const generateReview = async (biz: Business, starCount: number) => {
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-review", {
-        body: {
-          businessName: biz.name,
-          location: biz.location || "",
-          stars: starCount,
-        },
-      });
-      if (error) throw error;
-      setReview(data.review);
-    } catch {
-      toast.error("Failed to generate review. Please try again.");
+      const generatedReview = await generateLocalReview(
+        biz.name,
+        biz.location,
+        biz.description,
+        starCount,
+        language as Language
+      );
+      setReview(generatedReview);
+    } catch (error) {
+      toast.error(t.errorGenerate);
     } finally {
       setGenerating(false);
     }
@@ -55,13 +65,13 @@ const ReviewPage = () => {
 
   const handleStarClick = (rating: number) => {
     setStars(rating);
-    if (business) generateReview(business, rating);
+    if (business) generateReviewInstant(business, rating);
   };
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(review);
     setCopied(true);
-    toast.success("Review copied!");
+    toast.success(t.successCopied);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -85,9 +95,10 @@ const ReviewPage = () => {
   if (!business) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <LanguageSwitcher />
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Business not found</h1>
-          <p className="mt-2 text-muted-foreground">This review link doesn't seem to be valid.</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.businessNotFound}</h1>
+          <p className="mt-2 text-muted-foreground">{t.businessNotFoundDesc}</p>
         </div>
       </div>
     );
@@ -95,10 +106,11 @@ const ReviewPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <LanguageSwitcher />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pt-8">
         {/* Business Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">📍 {business.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
           {business.location && (
             <p className="mt-1 text-muted-foreground">{business.location}</p>
           )}
@@ -106,7 +118,7 @@ const ReviewPage = () => {
 
         {/* Star Rating */}
         <div className="text-center">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">Rate your experience:</p>
+          <p className="mb-2 text-sm font-medium text-muted-foreground">{t.rateExperience}</p>
           <div className="flex justify-center gap-1">
             {[1, 2, 3, 4, 5].map((i) => (
               <button
@@ -129,7 +141,7 @@ const ReviewPage = () => {
         {/* Review Draft */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">Your Review Draft:</p>
+            <p className="text-sm font-medium text-muted-foreground">{t.reviewDraft}</p>
             <Button
               variant="ghost"
               size="sm"
@@ -137,11 +149,11 @@ const ReviewPage = () => {
               disabled={generating}
             >
               <RefreshCw className={`h-4 w-4 ${generating ? "animate-spin" : ""}`} />
-              Regenerate
+              {t.regenerate}
             </Button>
           </div>
           <Textarea
-            value={generating ? "Generating your review..." : review}
+            value={generating ? t.generatingReview : review}
             onChange={(e) => setReview(e.target.value)}
             disabled={generating}
             className="min-h-[120px] text-base"
@@ -158,11 +170,11 @@ const ReviewPage = () => {
           >
             {copied ? (
               <>
-                <Check className="h-5 w-5" /> Copied!
+                <Check className="h-5 w-5" /> {t.copied}
               </>
             ) : (
               <>
-                <Copy className="h-5 w-5" /> Copy Review
+                <Copy className="h-5 w-5" /> {t.copyReview}
               </>
             )}
           </Button>
@@ -172,19 +184,19 @@ const ReviewPage = () => {
             onClick={handleOpenGoogle}
             className="h-14 text-lg"
           >
-            <ExternalLink className="h-5 w-5" /> Open Google Reviews
+            <ExternalLink className="h-5 w-5" /> {t.openGoogleReviews}
           </Button>
         </div>
 
         {/* Tip */}
         <p className="text-center text-sm text-muted-foreground">
-          💡 Tip: Paste your review in Google, then tap <strong>Post</strong>
+          {t.tip} <strong>Post</strong>
         </p>
       </main>
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-muted-foreground">
-        Powered by <strong>ReviewPasta</strong> 🍝
+        {t.poweredBy} <strong>{t.appName}</strong>
       </footer>
     </div>
   );

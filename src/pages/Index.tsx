@@ -2,17 +2,24 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { getAllBusinesses, initTestData, Business } from "@/lib/db";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Plus, ExternalLink } from "lucide-react";
 
 const Index = () => {
-  const [businesses, setBusinesses] = useState<any[]>([]);
+  const { t } = useLanguage();
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase.from("businesses").select("*").order("created_at", { ascending: false });
-      setBusinesses(data || []);
+      // Initialize test data if database is empty
+      await initTestData();
+
+      // Fetch all businesses
+      const data = await getAllBusinesses();
+      setBusinesses(data);
       setLoading(false);
     };
     fetch();
@@ -20,31 +27,32 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <LanguageSwitcher />
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 p-4 pt-12">
         {/* Hero */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-foreground">🍝 ReviewPasta</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t.appName}</h1>
           <p className="mt-3 text-lg text-muted-foreground">
-            Get more Google reviews in 10 seconds. Customers scan, copy, and paste — done.
+            {t.appDescription}
           </p>
         </div>
 
         <div className="flex justify-center">
           <Button asChild size="lg">
             <Link to="/add-business">
-              <Plus className="h-5 w-5" /> Add a New Business
+              <Plus className="h-5 w-5" /> {t.addNewBusiness}
             </Link>
           </Button>
         </div>
 
         {/* Business List */}
         {loading ? (
-          <p className="text-center text-muted-foreground">Loading...</p>
+          <p className="text-center text-muted-foreground">{t.loading}</p>
         ) : businesses.length === 0 ? (
-          <p className="text-center text-muted-foreground">No businesses yet. Add one above!</p>
+          <p className="text-center text-muted-foreground">{t.noBusiness}</p>
         ) : (
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-medium text-muted-foreground">Existing Businesses</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">{t.existingBusinesses}</h2>
             {businesses.map((b) => (
               <Link key={b.id} to={`/review/${b.slug}`}>
                 <Card className="transition-colors hover:bg-accent">
@@ -63,7 +71,7 @@ const Index = () => {
       </main>
 
       <footer className="py-4 text-center text-xs text-muted-foreground">
-        Powered by <strong>ReviewPasta</strong> 🍝
+        {t.poweredBy} <strong>{t.appName}</strong>
       </footer>
     </div>
   );

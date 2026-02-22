@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#FF6B35"/>
+
+  <!-- Pasta bowl -->
+  <path d="M 20 32 Q 20 38 24 40 L 40 40 Q 44 38 44 32 L 20 32 Z" fill="#FFF8E7" stroke="#8B4513" stroke-width="1.5"/>
+
+  <!-- Pasta strands -->
+  <path d="M 24 28 Q 26 24 28 28 Q 30 32 32 28 Q 34 24 36 28 Q 38 32 40 28" stroke="#FFD700" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M 25 30 Q 27 27 29 30 Q 31 33 33 30 Q 35 27 37 30 Q 39 33 41 30" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Fork -->
+  <path d="M 38 20 L 38 28 M 40 20 L 40 28 M 42 20 L 42 28" stroke="#C0C0C0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 37 28 L 43 28 L 42 32 L 38 32 Z" fill="#C0C0C0"/>
+  <path d="M 40 32 L 41 38" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Star for review -->
+  <path d="M 24 18 L 25.5 21 L 29 21.5 L 26.5 24 L 27 27.5 L 24 26 L 21 27.5 L 21.5 24 L 19 21.5 L 22.5 21 Z" fill="#FFD700" stroke="#FF6B35" stroke-width="0.5"/>
+</svg>
