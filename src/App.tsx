@@ -11,34 +11,12 @@ import ReviewPage from "./pages/ReviewPage";
 import AddBusiness from "./pages/AddBusiness";
 import WaitlistSignup from "./pages/WaitlistSignup";
 import AdminWaitlist from "./pages/AdminWaitlist";
+import AdminBusinesses from "./pages/AdminBusinesses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Migration disabled - already using Supabase
-  // Old migration code commented out to prevent duplicate insert errors
-  /*
-  useEffect(() => {
-    const runMigration = async () => {
-      const shouldMigrate = await shouldRunMigration();
-      if (shouldMigrate) {
-        console.log('Starting data migration...');
-        const result = await migrateDataToSupabase();
-
-        if (result.success) {
-          toast.success(`Migration complete! ${result.migratedCount} businesses migrated.`);
-        } else if (result.errors.length > 0) {
-          console.error('Migration errors:', result.errors);
-          toast.warning(`Migration completed with ${result.errors.length} errors. Check console.`);
-        }
-      }
-    };
-
-    runMigration();
-  }, []);
-  */
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -57,6 +35,14 @@ const App = () => {
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminWaitlist />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/businesses"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminBusinesses />
                     </ProtectedRoute>
                   }
                 />

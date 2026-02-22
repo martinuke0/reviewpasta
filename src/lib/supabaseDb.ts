@@ -135,3 +135,15 @@ export async function canEditBusiness(
 
   return business?.owner_id === userId;
 }
+
+export async function deleteBusiness(businessId: string): Promise<void> {
+  const { error } = await supabase
+    .from('businesses')
+    .delete()
+    .eq('id', businessId);
+
+  if (error) {
+    console.error('Error deleting business:', error);
+    throw new Error('Failed to delete business');
+  }
+}

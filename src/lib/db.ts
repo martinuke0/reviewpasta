@@ -79,6 +79,13 @@ export async function canEditBusiness(businessId: string, userId?: string): Prom
   return false; // No auth in IndexedDB mode
 }
 
+export async function deleteBusiness(businessId: string): Promise<void> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.deleteBusiness(businessId);
+  }
+  throw new Error('Delete not supported in IndexedDB mode');
+}
+
 export async function initTestData(): Promise<void> {
   const count = await db.businesses.count();
 

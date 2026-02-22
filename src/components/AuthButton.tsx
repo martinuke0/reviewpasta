@@ -49,6 +49,9 @@ export const AuthButton = () => {
         <DropdownMenuSeparator />
         {profile?.is_admin && (
           <>
+            <DropdownMenuItem onClick={() => navigate('/admin/businesses')}>
+              Manage Businesses
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/admin/waitlist')}>
               Waitlist Dashboard
             </DropdownMenuItem>

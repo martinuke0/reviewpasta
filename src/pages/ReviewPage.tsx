@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode, Pencil } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getBusinessBySlug, updateBusinessDescription, canEditBusiness, Business } from "@/lib/db";
+import { getBusinessBySlug, updateBusinessDescription, canEditBusiness, deleteBusiness, Business } from "@/lib/db";
 import { generateReview as generateLocalReview, reviewTemplates, type Language } from "@/lib/reviewGenerator";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -11,11 +11,22 @@ import { AuthButton } from "@/components/AuthButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { QRCodeDialog } from "@/components/QRCodeDialog";
 import { EditBusinessDialog } from "@/components/EditBusinessDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 const ReviewPage = () => {
   const { t, language } = useLanguage();
   const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const { businessSlug } = useParams<{ businessSlug: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [stars, setStars] = useState(5);
@@ -25,6 +36,7 @@ const ReviewPage = () => {
   const [copied, setCopied] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
@@ -118,6 +130,19 @@ const ReviewPage = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!business?.id) return;
+
+    try {
+      await deleteBusiness(business.id);
+      toast.success(`${business.name} deleted successfully`);
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting business:', error);
+      toast.error('Failed to delete business');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -149,15 +174,28 @@ const ReviewPage = () => {
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
               {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setEditDialogOpen(true)}
-                  className="h-8 w-8"
-                  title={t.editDescription}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditDialogOpen(true)}
+                    className="h-8 w-8"
+                    title={t.editDescription}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      title="Delete business"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </>
               )}
             </div>
             {business.location && (
@@ -274,6 +312,28 @@ const ReviewPage = () => {
           onSave={handleSaveDescription}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Business?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{business?.name}</strong>?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
