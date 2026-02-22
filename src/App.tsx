@@ -6,9 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect } from "react";
-import { shouldRunMigration, migrateDataToSupabase } from "@/lib/migration";
-import { toast } from "sonner";
 import Index from "./pages/Index";
 import ReviewPage from "./pages/ReviewPage";
 import AddBusiness from "./pages/AddBusiness";
@@ -19,7 +16,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Run migration from IndexedDB to Supabase on first load
+  // Migration disabled - already using Supabase
+  // Old migration code commented out to prevent duplicate insert errors
+  /*
   useEffect(() => {
     const runMigration = async () => {
       const shouldMigrate = await shouldRunMigration();
@@ -38,6 +37,7 @@ const App = () => {
 
     runMigration();
   }, []);
+  */
 
   return (
     <QueryClientProvider client={queryClient}>
