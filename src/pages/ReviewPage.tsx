@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Star, Copy, Check, ExternalLink, RefreshCw } from "lucide-react";
+import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getBusinessBySlug, Business } from "@/lib/db";
 import { generateReview as generateLocalReview, reviewTemplates, type Language } from "@/lib/reviewGenerator";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { QRCodeDialog } from "@/components/QRCodeDialog";
 import { toast } from "sonner";
 
 const ReviewPage = () => {
@@ -18,6 +19,7 @@ const ReviewPage = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -109,11 +111,22 @@ const ReviewPage = () => {
       <LanguageSwitcher />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pt-8">
         {/* Business Header */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
-          {business.location && (
-            <p className="mt-1 text-muted-foreground">{business.location}</p>
-          )}
+        <div className="text-center space-y-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
+            {business.location && (
+              <p className="mt-1 text-muted-foreground">{business.location}</p>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setQrDialogOpen(true)}
+            className="gap-2"
+          >
+            <QrCode className="h-4 w-4" />
+            {t.qrCodeButton}
+          </Button>
         </div>
 
         {/* Star Rating */}
@@ -198,6 +211,13 @@ const ReviewPage = () => {
       <footer className="py-4 text-center text-xs text-muted-foreground">
         {t.poweredBy} <strong>{t.appName}</strong>
       </footer>
+
+      {/* QR Code Dialog */}
+      <QRCodeDialog
+        isOpen={qrDialogOpen}
+        onClose={() => setQrDialogOpen(false)}
+        business={business}
+      />
     </div>
   );
 };

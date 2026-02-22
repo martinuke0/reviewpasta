@@ -48,6 +48,22 @@ interface Translations {
   successAdded: string;
   successCopied: string;
   errorGenerate: string;
+
+  // QR Code
+  qrCodeButton: string;
+  qrCodeTitle: string;
+  qrScanPrompt: string;
+  qrSize: string;
+  qrSizeSmall: string;
+  qrSizeMedium: string;
+  qrSizeLarge: string;
+  qrFormat: string;
+  downloadQR: string;
+  shareQR: string;
+  copyLink: string;
+  successQRDownloaded: string;
+  successQRShared: string;
+  successLinkCopied: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -97,6 +113,22 @@ const translations: Record<Language, Translations> = {
     successAdded: 'Afacere adăugată!',
     successCopied: 'Recenzie copiată!',
     errorGenerate: 'Nu s-a putut genera recenzia. Te rugăm să încerci din nou.',
+
+    // QR Code
+    qrCodeButton: 'Obține cod QR',
+    qrCodeTitle: 'Cod QR pentru {business}',
+    qrScanPrompt: 'Scanează pentru a lăsa o recenzie la:',
+    qrSize: 'Dimensiune',
+    qrSizeSmall: 'Mic',
+    qrSizeMedium: 'Mediu',
+    qrSizeLarge: 'Mare',
+    qrFormat: 'Format',
+    downloadQR: 'Descarcă',
+    shareQR: 'Distribuie',
+    copyLink: 'Copiază link',
+    successQRDownloaded: 'Cod QR descărcat cu succes',
+    successQRShared: 'Cod QR distribuit cu succes',
+    successLinkCopied: 'Link copiat în clipboard',
   },
   en: {
     // Home page
@@ -144,6 +176,22 @@ const translations: Record<Language, Translations> = {
     successAdded: 'Business added!',
     successCopied: 'Review copied!',
     errorGenerate: 'Failed to generate review. Please try again.',
+
+    // QR Code
+    qrCodeButton: 'Get QR Code',
+    qrCodeTitle: 'QR Code for {business}',
+    qrScanPrompt: 'Scan to leave a review at:',
+    qrSize: 'Size',
+    qrSizeSmall: 'Small',
+    qrSizeMedium: 'Medium',
+    qrSizeLarge: 'Large',
+    qrFormat: 'Format',
+    downloadQR: 'Download',
+    shareQR: 'Share',
+    copyLink: 'Copy Link',
+    successQRDownloaded: 'QR code downloaded successfully',
+    successQRShared: 'QR code shared successfully',
+    successLinkCopied: 'Link copied to clipboard',
   },
 };
 
