@@ -339,12 +339,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Detect browser language
   const detectBrowserLanguage = (): Language => {
     const browserLang = navigator.language.toLowerCase();
-    // Check if browser is set to Romanian
-    if (browserLang.startsWith('ro')) {
-      return 'ro';
+    // Check if browser is set to English
+    if (browserLang.startsWith('en')) {
+      return 'en';
     }
-    // Default to English for all other languages
-    return 'en';
+    // Default to Romanian for all other languages
+    return 'ro';
   };
 
   const [language, setLanguageState] = useState<Language>(() => {
