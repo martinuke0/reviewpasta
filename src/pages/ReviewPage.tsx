@@ -1,32 +1,17 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode, Pencil, Trash2 } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getBusinessBySlug, updateBusinessDescription, canEditBusiness, deleteBusiness, Business } from "@/lib/db";
+import { getBusinessBySlug, Business } from "@/lib/db";
 import { generateReview as generateLocalReview, reviewTemplates, type Language } from "@/lib/reviewGenerator";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { AuthButton } from "@/components/AuthButton";
-import { useAuth } from "@/contexts/AuthContext";
 import { QRCodeDialog } from "@/components/QRCodeDialog";
-import { EditBusinessDialog } from "@/components/EditBusinessDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 const ReviewPage = () => {
   const { t, language } = useLanguage();
-  const { user, isAdmin } = useAuth();
-  const navigate = useNavigate();
   const { businessSlug } = useParams<{ businessSlug: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [stars, setStars] = useState(5);
@@ -35,9 +20,6 @@ const ReviewPage = () => {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -54,18 +36,6 @@ const ReviewPage = () => {
     };
     fetchBusiness();
   }, [businessSlug]);
-
-  useEffect(() => {
-    const checkEditPermission = async () => {
-      if (business && user) {
-        const canEditResult = await canEditBusiness(business.id!, user.id);
-        setCanEdit(canEditResult);
-      } else {
-        setCanEdit(false);
-      }
-    };
-    checkEditPermission();
-  }, [business, user, isAdmin]);
 
   // Instant synchronous review generation using templates
   const generateReviewInstant = (biz: Business, starCount: number) => {
@@ -116,33 +86,6 @@ const ReviewPage = () => {
     }
   };
 
-  const handleSaveDescription = async (newDescription: string) => {
-    if (!business?.id) return;
-
-    try {
-      await updateBusinessDescription(business.id, newDescription);
-      setBusiness({ ...business, description: newDescription });
-      toast.success(t.descriptionUpdated);
-    } catch (error) {
-      console.error('Error updating description:', error);
-      toast.error(t.descriptionUpdateError);
-      throw error;
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!business?.id) return;
-
-    try {
-      await deleteBusiness(business.id);
-      toast.success(`${business.name} deleted successfully`);
-      navigate('/');
-    } catch (error) {
-      console.error('Error deleting business:', error);
-      toast.error('Failed to delete business');
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -166,38 +109,11 @@ const ReviewPage = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <LanguageSwitcher />
-      <AuthButton />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pt-8">
         {/* Business Header */}
         <div className="text-center space-y-3">
           <div>
-            <div className="flex items-center justify-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
-              {canEdit && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditDialogOpen(true)}
-                    className="h-8 w-8"
-                    title={t.editDescription}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  {isAdmin && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteDialogOpen(true)}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      title="Delete business"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
+            <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
             {business.location && (
               <p className="mt-1 text-muted-foreground">{business.location}</p>
             )}
@@ -302,38 +218,6 @@ const ReviewPage = () => {
         onClose={() => setQrDialogOpen(false)}
         business={business}
       />
-
-      {/* Edit Business Dialog */}
-      {business && (
-        <EditBusinessDialog
-          business={business}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onSave={handleSaveDescription}
-        />
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Business?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{business?.name}</strong>?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

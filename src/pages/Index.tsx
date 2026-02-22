@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getAllBusinesses, initTestData, Business } from "@/lib/db";
+import { getAllBusinesses, Business } from "@/lib/db";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { AuthButton } from "@/components/AuthButton";
 import { Plus, ExternalLink } from "lucide-react";
 
 const Index = () => {
@@ -15,13 +14,6 @@ const Index = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      // Skip initTestData when using Supabase - data already exists in database
-      const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
-      if (!USE_SUPABASE) {
-        await initTestData();
-      }
-
-      // Fetch all businesses
       const data = await getAllBusinesses();
       setBusinesses(data);
       setLoading(false);
@@ -32,7 +24,6 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <LanguageSwitcher />
-      <AuthButton />
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 p-4 pt-12">
         {/* Hero */}
         <div className="text-center">

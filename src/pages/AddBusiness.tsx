@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { addBusiness } from "@/lib/db";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { AuthButton } from "@/components/AuthButton";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -59,7 +58,6 @@ const AddBusiness = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <LanguageSwitcher />
-      <AuthButton />
       <Card className="w-full max-w-md">
         <CardHeader>
           <Link to="/" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
