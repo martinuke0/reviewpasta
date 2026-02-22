@@ -15,8 +15,11 @@ const Index = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      // Initialize test data if database is empty
-      await initTestData();
+      // Skip initTestData when using Supabase - data already exists in database
+      const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
+      if (!USE_SUPABASE) {
+        await initTestData();
+      }
 
       // Fetch all businesses
       const data = await getAllBusinesses();
