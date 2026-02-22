@@ -1,4 +1,8 @@
 import Dexie, { Table } from 'dexie';
+import * as supabaseDb from './supabaseDb';
+
+// Feature flag to switch between IndexedDB and Supabase
+const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
 
 export interface Business {
   id?: string;
@@ -7,7 +11,8 @@ export interface Business {
   place_id: string;
   location?: string;
   description?: string;
-  created_at?: Date;
+  owner_id?: string | null;
+  created_at?: Date | string;
 }
 
 export class ReviewPastaDatabase extends Dexie {
@@ -23,16 +28,26 @@ export class ReviewPastaDatabase extends Dexie {
 
 export const db = new ReviewPastaDatabase();
 
-// Helper functions
+// Helper functions with feature flag
 export async function getAllBusinesses(): Promise<Business[]> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.getAllBusinesses();
+  }
   return await db.businesses.orderBy('created_at').reverse().toArray();
 }
 
-export async function getBusinessBySlug(slug: string): Promise<Business | undefined> {
+export async function getBusinessBySlug(slug: string): Promise<Business | undefined | null> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.getBusinessBySlug(slug);
+  }
   return await db.businesses.where('slug').equals(slug).first();
 }
 
-export async function addBusiness(data: Omit<Business, 'id' | 'created_at'>): Promise<string> {
+export async function addBusiness(data: Omit<Business, 'id' | 'created_at' | 'owner_id'>): Promise<string> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.addBusiness(data);
+  }
+
   // Check if slug already exists
   const existing = await getBusinessBySlug(data.slug);
   if (existing) {
@@ -48,6 +63,20 @@ export async function addBusiness(data: Omit<Business, 'id' | 'created_at'>): Pr
 
   await db.businesses.add(business);
   return id;
+}
+
+export async function updateBusinessDescription(businessId: string, description: string): Promise<void> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.updateBusinessDescription(businessId, description);
+  }
+  throw new Error('Update not supported in IndexedDB mode');
+}
+
+export async function canEditBusiness(businessId: string, userId?: string): Promise<boolean> {
+  if (USE_SUPABASE) {
+    return await supabaseDb.canEditBusiness(businessId, userId);
+  }
+  return false; // No auth in IndexedDB mode
 }
 
 export async function initTestData(): Promise<void> {

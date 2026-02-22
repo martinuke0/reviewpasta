@@ -64,6 +64,50 @@ interface Translations {
   successQRDownloaded: string;
   successQRShared: string;
   successLinkCopied: string;
+
+  // Auth & Waitlist
+  requestAccess: string;
+  signOut: string;
+  joinWaitlist: string;
+  joinWaitlistDescription: string;
+  email: string;
+  emailPlaceholder: string;
+  phoneNumber: string;
+  phoneNumberPlaceholder: string;
+  yourName: string;
+  namePlaceholder: string;
+  businessUrl: string;
+  businessUrlPlaceholder: string;
+  businessDescription: string;
+  businessDescriptionPlaceholder: string;
+  additionalMessage: string;
+  messagePlaceholder: string;
+  submitWaitlist: string;
+  submitting: string;
+  waitlistSuccess: string;
+  waitlistSuccessTitle: string;
+  waitlistSuccessMessage: string;
+  backToHome: string;
+  waitlistError: string;
+  alreadyOnWaitlist: string;
+
+  // Admin Waitlist
+  adminWaitlist: string;
+  pending: string;
+  approved: string;
+  rejected: string;
+  sendMagicLink: string;
+  markApproved: string;
+  reject: string;
+  magicLinkCopied: string;
+
+  // Edit
+  editDescription: string;
+  saveChanges: string;
+  cancel: string;
+  descriptionUpdated: string;
+  descriptionUpdateError: string;
+  characterLimit: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -129,6 +173,50 @@ const translations: Record<Language, Translations> = {
     successQRDownloaded: 'Cod QR descărcat cu succes',
     successQRShared: 'Cod QR distribuit cu succes',
     successLinkCopied: 'Link copiat în clipboard',
+
+    // Auth & Waitlist
+    requestAccess: 'Cere Acces',
+    signOut: 'Deconectare',
+    joinWaitlist: 'Alătură-te Listei de Așteptare',
+    joinWaitlistDescription: 'Solicită acces pentru a-ți adăuga afacerea pe ReviewPasta',
+    email: 'Email',
+    emailPlaceholder: 'emailul-tau@exemplu.ro',
+    phoneNumber: 'Număr de telefon',
+    phoneNumberPlaceholder: '+40 712 345 678',
+    yourName: 'Numele tău',
+    namePlaceholder: 'Ion Popescu',
+    businessUrl: 'URL Afacere',
+    businessUrlPlaceholder: 'https://afacerea-ta.ro',
+    businessDescription: 'Descriere Afacere',
+    businessDescriptionPlaceholder: 'Spune-ne despre afacerea ta...',
+    additionalMessage: 'Mesaj Adițional (opțional)',
+    messagePlaceholder: 'Orice altceva să știm...',
+    submitWaitlist: 'Trimite Cerere',
+    submitting: 'Se trimite...',
+    waitlistSuccess: 'Mulțumim! Te vom contacta când ești aprobat.',
+    waitlistSuccessTitle: 'Cerere Trimisă!',
+    waitlistSuccessMessage: 'Îți vom trimite un email când cererea ta este aprobată.',
+    backToHome: 'Înapoi la Pagina Principală',
+    waitlistError: 'Eroare la trimitere. Încearcă din nou.',
+    alreadyOnWaitlist: 'Ești deja pe lista de așteptare!',
+
+    // Admin Waitlist
+    adminWaitlist: 'Panou Listă Așteptare',
+    pending: 'În Așteptare',
+    approved: 'Aprobat',
+    rejected: 'Respins',
+    sendMagicLink: 'Trimite Link Magic',
+    markApproved: 'Marchează Aprobat',
+    reject: 'Respinge',
+    magicLinkCopied: 'Link copiat! Trimite-l utilizatorului.',
+
+    // Edit
+    editDescription: 'Editează Descrierea',
+    saveChanges: 'Salvează Modificările',
+    cancel: 'Anulează',
+    descriptionUpdated: 'Descriere actualizată!',
+    descriptionUpdateError: 'Eroare la actualizare',
+    characterLimit: 'Maxim 500 caractere',
   },
   en: {
     // Home page
@@ -192,6 +280,50 @@ const translations: Record<Language, Translations> = {
     successQRDownloaded: 'QR code downloaded successfully',
     successQRShared: 'QR code shared successfully',
     successLinkCopied: 'Link copied to clipboard',
+
+    // Auth & Waitlist
+    requestAccess: 'Request Access',
+    signOut: 'Sign Out',
+    joinWaitlist: 'Join Waitlist',
+    joinWaitlistDescription: 'Request access to add your business to ReviewPasta',
+    email: 'Email',
+    emailPlaceholder: 'your-email@example.com',
+    phoneNumber: 'Phone Number',
+    phoneNumberPlaceholder: '+1 (555) 123-4567',
+    yourName: 'Your Name',
+    namePlaceholder: 'John Doe',
+    businessUrl: 'Business URL',
+    businessUrlPlaceholder: 'https://your-business.com',
+    businessDescription: 'Business Description',
+    businessDescriptionPlaceholder: 'Tell us about your business...',
+    additionalMessage: 'Additional Message (optional)',
+    messagePlaceholder: 'Anything else we should know...',
+    submitWaitlist: 'Submit Request',
+    submitting: 'Submitting...',
+    waitlistSuccess: 'Thanks! We\'ll contact you when approved.',
+    waitlistSuccessTitle: 'Request Submitted!',
+    waitlistSuccessMessage: 'We\'ll send you an email when your request is approved.',
+    backToHome: 'Back to Home',
+    waitlistError: 'Failed to submit. Try again.',
+    alreadyOnWaitlist: 'You\'re already on the waitlist!',
+
+    // Admin Waitlist
+    adminWaitlist: 'Waitlist Dashboard',
+    pending: 'Pending',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    sendMagicLink: 'Send Magic Link',
+    markApproved: 'Mark Approved',
+    reject: 'Reject',
+    magicLinkCopied: 'Magic link copied! Send it to the user.',
+
+    // Edit
+    editDescription: 'Edit Description',
+    saveChanges: 'Save Changes',
+    cancel: 'Cancel',
+    descriptionUpdated: 'Description updated!',
+    descriptionUpdateError: 'Failed to update',
+    characterLimit: '500 characters max',
   },
 };
 

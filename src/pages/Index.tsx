@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getAllBusinesses, initTestData, Business } from "@/lib/db";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { AuthButton } from "@/components/AuthButton";
 import { Plus, ExternalLink } from "lucide-react";
 
 const Index = () => {
@@ -28,6 +29,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <LanguageSwitcher />
+      <AuthButton />
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 p-4 pt-12">
         {/* Hero */}
         <div className="text-center">
