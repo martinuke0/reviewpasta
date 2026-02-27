@@ -1,11 +1,9 @@
-# Cloudflare Workers configuration for ReviewPasta API
-name = "reviewpasta-api"
-main = "src/worker.ts"
+# Cloudflare Pages configuration for ReviewPasta
+# Frontend assets deployed from dist/, API via Pages Functions
+name = "reviewpasta"
+pages_build_output_dir = "dist"
 compatibility_date = "2026-02-27"
 compatibility_flags = ["nodejs_compat"]
-
-# Pages configuration for frontend deployment
-pages_build_output_dir = "dist"
 
 # D1 database binding
 [[d1_databases]]

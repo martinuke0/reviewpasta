@@ -11,8 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:worker": "wrangler dev",
-    "deploy:worker": "wrangler deploy",
+    "dev:pages": "wrangler pages dev dist --compatibility-date=2026-02-27 --d1 DB=reviewpasta-db",
     "deploy:pages": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
