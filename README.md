@@ -37,4 +37,15 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Cloudflare Pages (hosting)
+- Cloudflare Pages Functions (API)
+- Cloudflare D1 (database)
+
+## Deployment
+
+This project is deployed to Cloudflare Pages with auto-deploy enabled.
+
+**Live URL:** https://reviewpasta.pages.dev
+
+**Deployment:** Every push to `main` branch triggers automatic deployment to Cloudflare Pages
 
