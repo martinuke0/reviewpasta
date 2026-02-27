@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy",
+    "deploy:pages": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
