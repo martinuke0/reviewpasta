@@ -87,13 +87,44 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| | | |
+| INFRA-01 | Phase 1 - Foundation Setup | Pending |
+| INFRA-02 | Phase 1 - Foundation Setup | Pending |
+| INFRA-03 | Phase 1 - Foundation Setup | Pending |
+| INFRA-04 | Phase 1 - Foundation Setup | Pending |
+| INFRA-05 | Phase 1 - Foundation Setup | Pending |
+| INFRA-06 | Phase 1 - Foundation Setup | Pending |
+| API-01 | Phase 2 - Backend APIs | Pending |
+| API-02 | Phase 2 - Backend APIs | Pending |
+| API-03 | Phase 2 - Backend APIs | Pending |
+| API-04 | Phase 2 - Backend APIs | Pending |
+| API-05 | Phase 2 - Backend APIs | Pending |
+| API-06 | Phase 2 - Backend APIs | Pending |
+| API-07 | Phase 2 - Backend APIs | Pending |
+| API-08 | Phase 2 - Backend APIs | Pending |
+| API-09 | Phase 2 - Backend APIs | Pending |
+| FE-01 | Phase 3 - Frontend Migration | Pending |
+| FE-02 | Phase 3 - Frontend Migration | Pending |
+| FE-03 | Phase 3 - Frontend Migration | Pending |
+| FE-04 | Phase 3 - Frontend Migration | Pending |
+| FE-05 | Phase 3 - Frontend Migration | Pending |
+| FEAT-01 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-02 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-03 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-04 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-05 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-06 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-07 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-08 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-09 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-10 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-11 | Phase 4 - End-to-End Validation | Pending |
+| FEAT-12 | Phase 4 - End-to-End Validation | Pending |
 
 **Coverage:**
 - v1 requirements: 33 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 33 ⚠️
+- Mapped to phases: 33/33 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-27*
-*Last updated: 2026-02-27 after initial definition*
+*Last updated: 2026-02-27 after roadmap creation*
