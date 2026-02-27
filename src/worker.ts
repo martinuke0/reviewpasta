@@ -8,14 +8,7 @@ export interface Env {
   OPENROUTER_API_KEY: string;
 }
 
-interface CorsHeaders {
-  'Access-Control-Allow-Origin': string;
-  'Access-Control-Allow-Methods': string;
-  'Access-Control-Allow-Headers': string;
-  'Content-Type'?: string;
-}
-
-const corsHeaders: CorsHeaders = {
+const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
