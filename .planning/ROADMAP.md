@@ -18,6 +18,13 @@ Migrate ReviewPasta from Supabase backend to full Cloudflare stack (Pages + Work
 
 **Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Install Wrangler and create D1 database
+- [ ] 01-02-PLAN.md — Configure Workers and Pages projects
+- [ ] 01-03-PLAN.md — Setup secrets and verify deployment
+
 **Success Criteria:**
 1. Frontend successfully deploys to Cloudflare Pages with HTTPS URL
 2. Git push to main branch automatically triggers new deployment
@@ -74,7 +81,7 @@ Migrate ReviewPasta from Supabase backend to full Cloudflare stack (Pages + Work
 
 | Phase | Status | Requirements | Completion |
 |-------|--------|--------------|------------|
-| 1 - Foundation Setup | Pending | 6 | 0% |
+| 1 - Foundation Setup | Planned | 6 | 0% |
 | 2 - Backend APIs | Pending | 9 | 0% |
 | 3 - Frontend Migration | Pending | 5 | 0% |
 | 4 - End-to-End Validation | Pending | 12 | 0% |
@@ -83,10 +90,10 @@ Migrate ReviewPasta from Supabase backend to full Cloudflare stack (Pages + Work
 
 ## Next Actions
 
-1. Run `/gsd:plan-phase 1` to create execution plan for Foundation Setup
-2. Execute Phase 1 plan to configure Cloudflare infrastructure
-3. Verify Phase 1 success criteria before proceeding to Phase 2
+1. Execute Phase 1 plan to configure Cloudflare infrastructure: `/gsd:execute-phase 1`
+2. Verify Phase 1 success criteria before proceeding to Phase 2
+3. Plan Phase 2 after Phase 1 completion
 
 ---
 *Roadmap created: 2026-02-27*
-*Last updated: 2026-02-27*
+*Last updated: 2026-02-27 after Phase 1 planning*
