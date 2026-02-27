@@ -1,0 +1,11 @@
+# Cloudflare Workers configuration for ReviewPasta API
+name = "reviewpasta-api"
+main = "src/worker.ts"
+compatibility_date = "2026-02-27"
+node_compat = true
+
+# D1 database binding will be configured after database creation
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "reviewpasta-db"
+# database_id = "TBD"
