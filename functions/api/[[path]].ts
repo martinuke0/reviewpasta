@@ -100,6 +100,107 @@ const reviewTemplates: Record<Language, Record<1 | 2 | 3 | 4 | 5, string[]>> = {
   },
 };
 
+/**
+ * Generate a review using templates
+ */
+function generateTemplateReview(
+  businessName: string,
+  stars: number,
+  language: Language
+): string {
+  const rating = Math.max(1, Math.min(5, Math.round(stars))) as 1 | 2 | 3 | 4 | 5;
+  const templates = reviewTemplates[language][rating];
+  const template = templates[Math.floor(Math.random() * templates.length)];
+
+  const review = template.replace(/{business}/g, businessName);
+  return review.trim();
+}
+
+/**
+ * Generate a review using OpenRouter AI
+ */
+async function generateAIReview(
+  businessName: string,
+  location: string | undefined,
+  description: string | undefined,
+  stars: number,
+  language: Language,
+  apiKey: string,
+  requestUrl: string
+): Promise<string> {
+  const rating = Math.max(1, Math.min(5, Math.round(stars)));
+
+  // Build context about the business
+  let businessContext = businessName;
+  if (description) {
+    businessContext += ` (${description})`;
+  }
+  if (location) {
+    businessContext += ` in ${location}`;
+  }
+
+  // Toned-down, more natural tone descriptions
+  const toneMap: Record<number, string> = {
+    5: 'positive and satisfied',
+    4: 'positive',
+    3: 'neutral with mixed feelings',
+    2: 'disappointed but constructive',
+    1: 'disappointed and critical',
+  };
+
+  const languageName = language === 'ro' ? 'Romanian' : 'English';
+
+  const prompt = `Write a short, natural Google review for ${businessContext}.
+Rating: ${stars} stars
+Language: ${languageName}
+Tone: ${toneMap[rating]}
+Style: Conversational, authentic, like a real person
+Length: 1-2 sentences, keep it brief
+
+Write ONLY the review text in ${languageName}, no quotes, no formatting.`;
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': requestUrl,
+      'X-Title': 'ReviewPasta',
+    },
+    body: JSON.stringify({
+      model: 'auto',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 100,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter API error: ${response.status}`);
+  }
+
+  const data = await response.json() as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+      };
+    }>;
+  };
+
+  const review = data.choices?.[0]?.message?.content?.trim();
+
+  if (!review) {
+    throw new Error('No review generated');
+  }
+
+  return review;
+}
+
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -258,6 +359,81 @@ function generateSlug(name: string): string {
 }
 
 /**
+ * Handle POST /api/generate-review - Generate review for a business
+ */
+async function handleGenerateReview(env: Env, request: Request): Promise<Response> {
+  try {
+    const body = await request.json() as {
+      businessName?: string;
+      location?: string;
+      description?: string;
+      stars?: number;
+      language?: string;
+    };
+
+    // Validate required fields
+    if (!body.businessName || typeof body.businessName !== 'string') {
+      return errorResponse('businessName is required and must be a string', 400);
+    }
+
+    if (body.stars === undefined || body.stars === null) {
+      return errorResponse('stars is required', 400);
+    }
+
+    const stars = Number(body.stars);
+    if (isNaN(stars) || stars < 1 || stars > 5) {
+      return errorResponse('stars must be a number between 1 and 5', 400);
+    }
+
+    // Validate and normalize language
+    let language: Language = 'en';
+    if (body.language) {
+      const lang = body.language.toLowerCase();
+      if (lang === 'ro') {
+        language = 'ro';
+      } else if (lang !== 'en') {
+        // Default to English for invalid languages
+        language = 'en';
+      }
+    }
+
+    const businessName = body.businessName.trim();
+
+    // Check if API key exists and is valid
+    const hasValidApiKey = env.OPENROUTER_API_KEY &&
+                          env.OPENROUTER_API_KEY !== 'your-api-key-here';
+
+    let review: string;
+
+    if (hasValidApiKey) {
+      // Try AI generation with fallback to templates
+      try {
+        review = await generateAIReview(
+          businessName,
+          body.location,
+          body.description,
+          stars,
+          language,
+          env.OPENROUTER_API_KEY,
+          request.url
+        );
+      } catch (error) {
+        console.warn('AI review generation failed, falling back to templates:', error);
+        review = generateTemplateReview(businessName, stars, language);
+      }
+    } else {
+      // No valid API key, use templates
+      review = generateTemplateReview(businessName, stars, language);
+    }
+
+    return jsonResponse({ review });
+  } catch (error) {
+    console.error('Error generating review:', error);
+    return errorResponse('Failed to generate review', 500);
+  }
+}
+
+/**
  * Handle POST /api/businesses - Create new business
  */
 async function handleCreateBusiness(env: Env, request: Request): Promise<Response> {
@@ -384,6 +560,11 @@ export async function onRequest(context: EventContext<Env, string, unknown>): Pr
   // POST /api/businesses - Create new business
   if (pathname === '/api/businesses' && request.method === 'POST') {
     return handleCreateBusiness(env, request);
+  }
+
+  // POST /api/generate-review - Generate review
+  if (pathname === '/api/generate-review' && request.method === 'POST') {
+    return handleGenerateReview(env, request);
   }
 
   // GET /api/businesses/:slug - Get business by slug
