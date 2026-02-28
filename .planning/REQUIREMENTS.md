@@ -9,12 +9,12 @@ Requirements for migrating ReviewPasta to Cloudflare stack. All existing feature
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Frontend deployed to Cloudflare Pages with HTTPS
-- [ ] **INFRA-02**: Auto-deploy configured (git push to main triggers CF Pages deployment)
-- [ ] **INFRA-03**: D1 database created with businesses table schema
-- [ ] **INFRA-04**: OpenRouter API key configured in Workers environment secrets
-- [ ] **INFRA-05**: Wrangler configuration files created (wrangler.toml)
-- [ ] **INFRA-06**: Build succeeds and produces deployable artifacts
+- [x] **INFRA-01**: Frontend deployed to Cloudflare Pages with HTTPS
+- [x] **INFRA-02**: Auto-deploy configured (git push to main triggers CF Pages deployment)
+- [x] **INFRA-03**: D1 database created with businesses table schema
+- [x] **INFRA-04**: OpenRouter API key configured in Workers environment secrets
+- [x] **INFRA-05**: Wrangler configuration files created (wrangler.toml)
+- [x] **INFRA-06**: Build succeeds and produces deployable artifacts
 
 ### API - Business Operations
 
@@ -87,12 +87,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 - Foundation Setup | Pending |
-| INFRA-02 | Phase 1 - Foundation Setup | Pending |
-| INFRA-03 | Phase 1 - Foundation Setup | Pending |
-| INFRA-04 | Phase 1 - Foundation Setup | Pending |
-| INFRA-05 | Phase 1 - Foundation Setup | Pending |
-| INFRA-06 | Phase 1 - Foundation Setup | Pending |
+| INFRA-01 | Phase 1 - Foundation Setup | Complete |
+| INFRA-02 | Phase 1 - Foundation Setup | Complete |
+| INFRA-03 | Phase 1 - Foundation Setup | Complete |
+| INFRA-04 | Phase 1 - Foundation Setup | Complete |
+| INFRA-05 | Phase 1 - Foundation Setup | Complete |
+| INFRA-06 | Phase 1 - Foundation Setup | Complete |
 | API-01 | Phase 2 - Backend APIs | Pending |
 | API-02 | Phase 2 - Backend APIs | Pending |
 | API-03 | Phase 2 - Backend APIs | Pending |
