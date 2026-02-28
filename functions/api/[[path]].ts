@@ -55,14 +55,75 @@ function extractSlug(pathname: string): string | null {
 
 /**
  * Handle GET /api/businesses - List all businesses
+ * Supports optional pagination via query parameters:
+ * - page: Page number (default: 1, min: 1)
+ * - limit: Items per page (default: 20, max: 100)
+ *
+ * Without pagination params: returns array of businesses (backward compatible)
+ * With pagination params: returns { data: [...], pagination: { page, limit, total, totalPages } }
  */
-async function handleListBusinesses(env: Env): Promise<Response> {
+async function handleListBusinesses(env: Env, request: Request): Promise<Response> {
   try {
-    const { results } = await env.DB.prepare(
-      'SELECT id, name, slug, place_id, location, description, created_at FROM businesses ORDER BY created_at DESC'
-    ).all();
+    const url = new URL(request.url);
+    const pageParam = url.searchParams.get('page');
+    const limitParam = url.searchParams.get('limit');
 
-    return jsonResponse(results);
+    // Check if pagination params are provided
+    const hasPaginationParams = pageParam !== null || limitParam !== null;
+
+    if (!hasPaginationParams) {
+      // Backward compatibility: no pagination params, return all results
+      const { results } = await env.DB.prepare(
+        'SELECT id, name, slug, place_id, location, description, created_at FROM businesses ORDER BY created_at DESC'
+      ).all();
+
+      return jsonResponse(results);
+    }
+
+    // Parse and validate pagination parameters
+    let page = parseInt(pageParam || '1', 10);
+    let limit = parseInt(limitParam || '20', 10);
+
+    // Handle edge cases
+    if (isNaN(page) || page < 1) {
+      page = 1;
+    }
+
+    if (isNaN(limit) || limit < 1) {
+      limit = 20;
+    }
+
+    // Cap limit at 100
+    if (limit > 100) {
+      limit = 100;
+    }
+
+    // Calculate offset
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const countResult = await env.DB.prepare(
+      'SELECT COUNT(*) as count FROM businesses'
+    ).first<{ count: number }>();
+
+    const total = countResult?.count || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    // Get paginated results
+    const { results } = await env.DB.prepare(
+      'SELECT id, name, slug, place_id, location, description, created_at FROM businesses ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    ).bind(limit, offset).all();
+
+    // Return paginated response with metadata
+    return jsonResponse({
+      data: results,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Error listing businesses:', error);
     return errorResponse('Failed to fetch businesses', 500);
@@ -90,21 +151,91 @@ async function handleGetBusiness(env: Env, slug: string): Promise<Response> {
 }
 
 /**
+ * Generate slug from name
+ * Converts name to lowercase, replaces spaces/special chars with hyphens
+ * Example: "Bob's Pizza!" -> "bobs-pizza"
+ */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD') // Decompose accented characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+}
+
+/**
  * Handle POST /api/businesses - Create new business
  */
 async function handleCreateBusiness(env: Env, request: Request): Promise<Response> {
   try {
     const body = await request.json() as {
-      name: string;
-      slug: string;
+      name?: string;
+      slug?: string;
       place_id?: string;
       location?: string;
       description?: string;
     };
 
-    // Validate required fields
-    if (!body.name || !body.slug) {
-      return errorResponse('Missing required fields: name, slug', 400);
+    // Validate name (required)
+    if (!body.name || typeof body.name !== 'string') {
+      return errorResponse('Name is required and must be a string', 400);
+    }
+
+    const name = body.name.trim();
+    if (name.length === 0) {
+      return errorResponse('Name cannot be empty', 400);
+    }
+    if (name.length > 100) {
+      return errorResponse('Name must be 100 characters or less', 400);
+    }
+
+    // Validate or generate slug
+    let slug = body.slug?.trim() || '';
+    const slugWasProvided = !!body.slug;
+
+    if (!slug) {
+      // Auto-generate slug from name if not provided
+      slug = generateSlug(name);
+      if (!slug) {
+        return errorResponse('Could not generate valid slug from name', 400);
+      }
+    } else {
+      // Validate manually provided slug
+      if (slug.length > 50) {
+        return errorResponse('Slug must be 50 characters or less', 400);
+      }
+      if (!/^[a-z0-9-]+$/.test(slug)) {
+        return errorResponse('Slug must contain only lowercase letters, numbers, and hyphens', 400);
+      }
+    }
+
+    // Validate place_id (optional)
+    if (body.place_id !== undefined && body.place_id !== null) {
+      if (typeof body.place_id !== 'string' || body.place_id.trim().length === 0) {
+        return errorResponse('Place ID must be a non-empty string if provided', 400);
+      }
+    }
+
+    // Validate location (optional)
+    if (body.location !== undefined && body.location !== null) {
+      if (typeof body.location !== 'string') {
+        return errorResponse('Location must be a string if provided', 400);
+      }
+      if (body.location.length > 200) {
+        return errorResponse('Location must be 200 characters or less', 400);
+      }
+    }
+
+    // Validate description (optional)
+    if (body.description !== undefined && body.description !== null) {
+      if (typeof body.description !== 'string') {
+        return errorResponse('Description must be a string if provided', 400);
+      }
+      if (body.description.length > 500) {
+        return errorResponse('Description must be 500 characters or less', 400);
+      }
     }
 
     // Generate unique ID
@@ -115,11 +246,11 @@ async function handleCreateBusiness(env: Env, request: Request): Promise<Respons
       'INSERT INTO businesses (id, name, slug, place_id, location, description) VALUES (?, ?, ?, ?, ?, ?)'
     ).bind(
       id,
-      body.name,
-      body.slug,
-      body.place_id || null,
-      body.location || null,
-      body.description || null
+      name,
+      slug,
+      body.place_id?.trim() || null,
+      body.location?.trim() || null,
+      body.description?.trim() || null
     ).run();
 
     // Fetch and return created business
@@ -155,7 +286,7 @@ export async function onRequest(context: EventContext<Env, string, unknown>): Pr
 
   // GET /api/businesses - List all businesses
   if (pathname === '/api/businesses' && request.method === 'GET') {
-    return handleListBusinesses(env);
+    return handleListBusinesses(env, request);
   }
 
   // POST /api/businesses - Create new business
