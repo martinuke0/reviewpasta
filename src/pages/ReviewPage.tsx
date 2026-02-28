@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Star, Copy, Check, ExternalLink, RefreshCw, QrCode, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getBusinessBySlug, Business } from "@/lib/db";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 const ReviewPage = () => {
   const { t, language } = useLanguage();
   const { businessSlug } = useParams<{ businessSlug: string }>();
+  const navigate = useNavigate();
   const [business, setBusiness] = useState<Business | null>(null);
   const [stars, setStars] = useState(5);
   const [review, setReview] = useState("");
@@ -96,11 +97,24 @@ const ReviewPage = () => {
 
   if (!business) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <LanguageSwitcher />
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">{t.businessNotFound}</h1>
-          <p className="mt-2 text-muted-foreground">{t.businessNotFoundDesc}</p>
+      <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t.back}
+          </Button>
+          <LanguageSwitcher />
+        </div>
+        <div className="flex flex-1 items-center justify-center p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-foreground">{t.businessNotFound}</h1>
+            <p className="mt-2 text-muted-foreground">{t.businessNotFoundDesc}</p>
+          </div>
         </div>
       </div>
     );
@@ -108,8 +122,19 @@ const ReviewPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <LanguageSwitcher />
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pt-8">
+      <div className="flex items-center justify-between p-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t.back}
+        </Button>
+        <LanguageSwitcher />
+      </div>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4 pt-0">
         {/* Business Header */}
         <div className="text-center space-y-3">
           <div>
