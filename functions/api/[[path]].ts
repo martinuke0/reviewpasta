@@ -8,6 +8,98 @@ interface Env {
   OPENROUTER_API_KEY: string;
 }
 
+type Language = 'en' | 'ro';
+
+// Review templates ported from src/lib/reviewGenerator.ts
+const reviewTemplates: Record<Language, Record<1 | 2 | 3 | 4 | 5, string[]>> = {
+  en: {
+    5: [
+      "Great experience at {business}! Definitely recommend.",
+      "{business} was excellent. Will come back.",
+      "Really happy with {business}. Good quality and service.",
+      "Highly recommend {business}. Very satisfied.",
+      "{business} exceeded my expectations. Great place.",
+      "Fantastic service at {business}. Worth every penny.",
+      "Love {business}! Everything was perfect.",
+      "{business} is the real deal. Won't disappoint.",
+    ],
+    4: [
+      "Good experience at {business}. Would return.",
+      "{business} is solid. No complaints.",
+      "Happy with my visit to {business}.",
+      "{business} was nice. Good service.",
+      "Enjoyed {business}. Delivered what I expected.",
+      "Pleasant experience at {business}. Recommended.",
+      "{business} did a good job. Satisfied overall.",
+    ],
+    3: [
+      "{business} was okay. Nothing special.",
+      "Average experience at {business}.",
+      "{business} is decent, could be better.",
+      "It's alright at {business}. Nothing stands out.",
+      "{business} met basic expectations.",
+      "Mixed feelings about {business}.",
+    ],
+    2: [
+      "Disappointed with {business}. Expected more.",
+      "{business} was below expectations.",
+      "Not impressed with {business}.",
+      "{business} needs improvement in several areas.",
+      "Had issues at {business}. Not great.",
+    ],
+    1: [
+      "Poor experience at {business}.",
+      "{business} was not good. Would not recommend.",
+      "Disappointed with {business}. Won't return.",
+      "Bad service at {business}. Not worth it.",
+      "{business} fell well short. Avoid.",
+    ],
+  },
+  ro: {
+    5: [
+      "Experiență grozavă la {business}! Recomand cu încredere.",
+      "{business} a fost excelent. Cu siguranță mă voi întoarce.",
+      "Foarte mulțumit de {business}. Calitate și servicii bune.",
+      "Recomand cu căldură {business}. Foarte satisfăcut.",
+      "{business} a depășit așteptările. Loc grozav.",
+      "Servicii fantastice la {business}. Merită fiecare ban.",
+      "Îmi place {business}! Totul a fost perfect.",
+      "{business} este de încredere. Nu vei fi dezamăgit.",
+    ],
+    4: [
+      "Experiență bună la {business}. M-aș întoarce.",
+      "{business} este solid. Fără probleme.",
+      "Mulțumit de vizita la {business}.",
+      "{business} a fost plăcut. Servicii bune.",
+      "M-am bucurat de {business}. A îndeplinit așteptările.",
+      "Experiență plăcută la {business}. Recomand.",
+      "{business} a făcut treabă bună. Mulțumit în general.",
+    ],
+    3: [
+      "{business} a fost ok. Nimic special.",
+      "Experiență medie la {business}.",
+      "{business} este decent, ar putea fi mai bine.",
+      "E în regulă la {business}. Nimic remarcabil.",
+      "{business} a îndeplinit așteptările de bază.",
+      "Sentimente mixte despre {business}.",
+    ],
+    2: [
+      "Dezamăgit de {business}. Mă așteptam la mai mult.",
+      "{business} a fost sub așteptări.",
+      "Nu sunt impresionat de {business}.",
+      "{business} necesită îmbunătățiri în mai multe zone.",
+      "Am avut probleme la {business}. Nu prea bine.",
+    ],
+    1: [
+      "Experiență slabă la {business}.",
+      "{business} nu a fost bine. Nu recomand.",
+      "Dezamăgit de {business}. Nu mă voi întoarce.",
+      "Servicii proaste la {business}. Nu merită.",
+      "{business} a fost mult sub așteptări. Evitați.",
+    ],
+  },
+};
+
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
