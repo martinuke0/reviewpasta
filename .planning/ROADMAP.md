@@ -43,6 +43,14 @@ Plans:
 
 **Requirements:** API-01, API-02, API-03, API-04, API-05, API-06, API-07, API-08, API-09
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Add pagination to business list endpoint
+- [ ] 02-02-PLAN.md — Implement review generation with TDD
+- [ ] 02-03-PLAN.md — Enhance business validation and slug handling
+- [ ] 02-04-PLAN.md — Verify all API endpoints
+
 **Success Criteria:**
 1. GET /api/businesses returns all businesses ordered by created_at descending
 2. GET /api/businesses/:slug returns specific business or 404 for invalid slug
@@ -85,7 +93,7 @@ Plans:
 | Phase | Status | Requirements | Completion |
 |-------|--------|--------------|------------|
 | 1 - Foundation Setup | Complete | 6 | 100% |
-| 2 - Backend APIs | Pending | 9 | 0% |
+| 2 - Backend APIs | Planned | 9 | 0% |
 | 3 - Frontend Migration | Pending | 5 | 0% |
 | 4 - End-to-End Validation | Pending | 12 | 0% |
 
@@ -93,10 +101,10 @@ Plans:
 
 ## Next Actions
 
-1. Plan Phase 2: Backend APIs - `/gsd:discuss-phase 2` or `/gsd:plan-phase 2`
+1. Execute Phase 2: Backend APIs - `/gsd:execute-phase 2`
 2. Implement business CRUD operations and review generation endpoints
 3. Verify Phase 2 success criteria before proceeding to Phase 3
 
 ---
 *Roadmap created: 2026-02-27*
-*Last updated: 2026-02-28 after Phase 1 execution*
+*Last updated: 2026-02-28 after Phase 2 planning*
