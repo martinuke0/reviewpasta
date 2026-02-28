@@ -1,8 +1,4 @@
-// OpenRouter AI-powered review generation with template fallback
-
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'auto'; // Free model
+// Workers API-powered review generation with template fallback
 
 export type Language = 'en' | 'ro';
 
@@ -116,70 +112,26 @@ async function generateAIReview(
   stars: number,
   language: Language
 ): Promise<string> {
-  const rating = Math.max(1, Math.min(5, Math.round(stars)));
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-  // Build context about the business
-  let businessContext = businessName;
-  if (description) {
-    businessContext += ` (${description})`;
-  }
-  if (location) {
-    businessContext += ` in ${location}`;
-  }
-
-  // Toned-down, more natural tone descriptions
-  const toneMap: Record<number, string> = {
-    5: 'positive and satisfied',
-    4: 'positive',
-    3: 'neutral with mixed feelings',
-    2: 'disappointed but constructive',
-    1: 'disappointed and critical',
-  };
-
-  const languageName = language === 'ro' ? 'Romanian' : 'English';
-
-  const prompt = `Write a short, natural Google review for ${businessContext}.
-Rating: ${stars} stars
-Language: ${languageName}
-Tone: ${toneMap[rating]}
-Style: Conversational, authentic, like a real person
-Length: 1-2 sentences, keep it brief
-
-Write ONLY the review text in ${languageName}, no quotes, no formatting.`;
-
-  const response = await fetch(OPENROUTER_API_URL, {
+  const response = await fetch(`${API_BASE_URL}/generate-review`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'ReviewPasta',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 100,
+      businessName,
+      location,
+      description,
+      stars,
+      language,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouter API error: ${response.status}`);
+    throw new Error(`API error: ${response.status}`);
   }
 
   const data = await response.json();
-  const review = data.choices[0]?.message?.content?.trim();
-
-  if (!review) {
-    throw new Error('No review generated');
-  }
-
-  return review;
+  return data.review;
 }
 
 export async function generateReview(
@@ -189,11 +141,6 @@ export async function generateReview(
   stars: number,
   language: Language = 'en'
 ): Promise<string> {
-  // If no API key is configured, use template-based generation
-  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your-api-key-here') {
-    return generateTemplateReview(businessName, stars, language);
-  }
-
   // Try AI generation first, fall back to templates if it fails
   try {
     return await generateAIReview(businessName, location, description, stars, language);
