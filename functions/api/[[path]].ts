@@ -10,6 +10,8 @@ interface Env {
 
 type Language = 'en' | 'ro';
 
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
 // Review templates ported from src/lib/reviewGenerator.ts
 const reviewTemplates: Record<Language, Record<1 | 2 | 3 | 4 | 5, string[]>> = {
   en: {
@@ -159,7 +161,7 @@ Length: 1-2 sentences, keep it brief
 
 Write ONLY the review text in ${languageName}, no quotes, no formatting.`;
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -506,35 +508,64 @@ async function handleCreateBusiness(env: Env, request: Request): Promise<Respons
       }
     }
 
-    // Generate unique ID
-    const id = crypto.randomUUID();
+    // Try to insert with retry on auto-generated slug conflict
+    let attemptCount = 0;
+    const maxAttempts = 2;
 
-    // Insert business
-    await env.DB.prepare(
-      'INSERT INTO businesses (id, name, slug, place_id, location, description) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(
-      id,
-      name,
-      slug,
-      body.place_id?.trim() || null,
-      body.location?.trim() || null,
-      body.description?.trim() || null
-    ).run();
+    while (attemptCount < maxAttempts) {
+      try {
+        // Generate unique ID
+        const id = crypto.randomUUID();
 
-    // Fetch and return created business
-    const business = await env.DB.prepare(
-      'SELECT id, name, slug, place_id, location, description, created_at FROM businesses WHERE id = ?'
-    ).bind(id).first();
+        // Insert business
+        await env.DB.prepare(
+          'INSERT INTO businesses (id, name, slug, place_id, location, description) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(
+          id,
+          name,
+          slug,
+          body.place_id?.trim() || null,
+          body.location?.trim() || null,
+          body.description?.trim() || null
+        ).run();
 
-    return jsonResponse(business, 201);
-  } catch (error: any) {
-    console.error('Error creating business:', error);
+        // Fetch and return created business
+        const business = await env.DB.prepare(
+          'SELECT id, name, slug, place_id, location, description, created_at FROM businesses WHERE id = ?'
+        ).bind(id).first();
 
-    // Handle unique constraint violation (duplicate slug)
-    if (error.message?.includes('UNIQUE constraint failed')) {
-      return errorResponse('Business with this slug already exists', 409);
+        return jsonResponse(business, 201);
+      } catch (error: any) {
+        // Handle unique constraint violation (duplicate slug)
+        if (error.message?.includes('UNIQUE constraint failed')) {
+          attemptCount++;
+
+          // If slug was manually provided, don't retry - return 409
+          if (slugWasProvided) {
+            return errorResponse('A business with this slug already exists. Please choose a different slug.', 409);
+          }
+
+          // If auto-generated and first attempt, retry with random suffix
+          if (attemptCount < maxAttempts) {
+            // Generate random 4-character suffix
+            const randomSuffix = Math.random().toString(36).substring(2, 6);
+            slug = `${slug}-${randomSuffix}`;
+            continue;
+          }
+
+          // Max attempts reached
+          return errorResponse('Unable to generate unique slug. Please try again or provide a custom slug.', 409);
+        }
+
+        // Other errors, re-throw
+        throw error;
+      }
     }
 
+    // Should not reach here, but handle edge case
+    return errorResponse('Failed to create business', 500);
+  } catch (error: any) {
+    console.error('Error creating business:', error);
     return errorResponse('Failed to create business', 500);
   }
 }
