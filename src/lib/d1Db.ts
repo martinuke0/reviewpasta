@@ -43,3 +43,89 @@ export async function addBusiness(
   const business = await response.json();
   return business.id;
 }
+
+/**
+ * Verify admin password
+ */
+export async function verifyAdminPassword(password: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.success === true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Auth verification failed:', error);
+    return false;
+  }
+}
+
+/**
+ * Update business
+ */
+export async function updateBusiness(
+  slug: string,
+  updates: Partial<Omit<Business, 'id' | 'slug' | 'created_at'>>,
+  adminPassword: string
+): Promise<Business> {
+  const response = await fetch(`${API_BASE_URL}/businesses/${slug}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${adminPassword}`,
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update business');
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete business
+ */
+export async function deleteBusiness(slug: string, adminPassword: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/businesses/${slug}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${adminPassword}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete business');
+  }
+}
+
+/**
+ * Get admin stats
+ */
+export async function getAdminStats(adminPassword: string): Promise<{
+  total: number;
+  thisMonth: number;
+  recentBusinesses: Business[];
+}> {
+  const response = await fetch(`${API_BASE_URL}/stats`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${adminPassword}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch stats');
+  }
+
+  return response.json();
+}

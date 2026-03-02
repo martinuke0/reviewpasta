@@ -6,6 +6,7 @@
 interface Env {
   DB: D1Database;
   OPENROUTER_API_KEY: string;
+  ADMIN_PASSWORD?: string;
 }
 
 type Language = 'en' | 'ro';
@@ -361,6 +362,17 @@ function generateSlug(name: string): string {
 }
 
 /**
+ * Verify admin authorization header
+ */
+function verifyAdminAuth(request: Request, env: Env): boolean {
+  const authHeader = request.headers.get('Authorization');
+  if (!env.ADMIN_PASSWORD) {
+    return false;
+  }
+  return authHeader === `Bearer ${env.ADMIN_PASSWORD}`;
+}
+
+/**
  * Handle POST /api/generate-review - Generate review for a business
  */
 async function handleGenerateReview(env: Env, request: Request): Promise<Response> {
@@ -571,6 +583,177 @@ async function handleCreateBusiness(env: Env, request: Request): Promise<Respons
 }
 
 /**
+ * Handle POST /api/auth/verify - Verify admin password
+ */
+async function handleVerifyAuth(env: Env, request: Request): Promise<Response> {
+  try {
+    const body = await request.json() as { password: string };
+
+    if (!env.ADMIN_PASSWORD) {
+      console.error('ADMIN_PASSWORD not configured in environment');
+      return errorResponse('Admin auth not configured', 500);
+    }
+
+    // Trim whitespace from both passwords for comparison
+    const providedPassword = (body.password || '').trim();
+    const expectedPassword = env.ADMIN_PASSWORD.trim();
+
+    console.log('Auth attempt:', {
+      providedLength: providedPassword.length,
+      expectedLength: expectedPassword.length,
+      match: providedPassword === expectedPassword
+    });
+
+    if (providedPassword === expectedPassword) {
+      return jsonResponse({ success: true });
+    }
+
+    return errorResponse('Invalid password', 401);
+  } catch (error) {
+    console.error('Error verifying auth:', error);
+    return errorResponse('Failed to verify auth', 500);
+  }
+}
+
+/**
+ * Handle PUT /api/businesses/:slug - Update business
+ */
+async function handleUpdateBusiness(env: Env, request: Request, slug: string): Promise<Response> {
+  // Check admin authorization
+  if (!verifyAdminAuth(request, env)) {
+    return errorResponse('Unauthorized', 401);
+  }
+
+  try {
+    const body = await request.json() as {
+      name?: string;
+      place_id?: string;
+      location?: string;
+      description?: string;
+    };
+
+    // If name changed, regenerate slug
+    let newSlug = slug;
+    if (body.name) {
+      newSlug = generateSlug(body.name);
+    }
+
+    // Build dynamic SQL UPDATE query
+    const updates: string[] = [];
+    const bindings: any[] = [];
+
+    if (body.name !== undefined) {
+      updates.push('name = ?');
+      bindings.push(body.name);
+      updates.push('slug = ?');
+      bindings.push(newSlug);
+    }
+    if (body.place_id !== undefined) {
+      updates.push('place_id = ?');
+      bindings.push(body.place_id);
+    }
+    if (body.location !== undefined) {
+      updates.push('location = ?');
+      bindings.push(body.location);
+    }
+    if (body.description !== undefined) {
+      updates.push('description = ?');
+      bindings.push(body.description);
+    }
+
+    if (updates.length === 0) {
+      return errorResponse('No fields to update', 400);
+    }
+
+    // Add slug to bindings for WHERE clause
+    bindings.push(slug);
+
+    const sql = `
+      UPDATE businesses
+      SET ${updates.join(', ')}
+      WHERE slug = ?
+      RETURNING id, name, slug, place_id, location, description, created_at
+    `;
+
+    const result = await env.DB.prepare(sql).bind(...bindings).first();
+
+    if (!result) {
+      return errorResponse('Business not found', 404);
+    }
+
+    return jsonResponse(result);
+  } catch (error) {
+    console.error('Error updating business:', error);
+    return errorResponse('Failed to update business', 500);
+  }
+}
+
+/**
+ * Handle DELETE /api/businesses/:slug - Delete business
+ */
+async function handleDeleteBusiness(env: Env, request: Request, slug: string): Promise<Response> {
+  // Check admin authorization
+  if (!verifyAdminAuth(request, env)) {
+    return errorResponse('Unauthorized', 401);
+  }
+
+  try {
+    const result = await env.DB.prepare('DELETE FROM businesses WHERE slug = ?')
+      .bind(slug)
+      .run();
+
+    if (result.meta.changes === 0) {
+      return errorResponse('Business not found', 404);
+    }
+
+    return jsonResponse({ success: true });
+  } catch (error) {
+    console.error('Error deleting business:', error);
+    return errorResponse('Failed to delete business', 500);
+  }
+}
+
+/**
+ * Handle GET /api/stats - Get admin statistics
+ */
+async function handleGetStats(env: Env, request: Request): Promise<Response> {
+  // Check admin authorization
+  if (!verifyAdminAuth(request, env)) {
+    return errorResponse('Unauthorized', 401);
+  }
+
+  try {
+    // Total count
+    const totalResult = await env.DB.prepare('SELECT COUNT(*) as count FROM businesses').first() as any;
+    const total = (totalResult?.count as number) || 0;
+
+    // This month count
+    const thisMonthResult = await env.DB.prepare(`
+      SELECT COUNT(*) as count FROM businesses
+      WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+    `).first() as any;
+    const thisMonth = (thisMonthResult?.count as number) || 0;
+
+    // Recent 5 businesses
+    const recentResult = await env.DB.prepare(`
+      SELECT id, name, slug, place_id, location, description, created_at
+      FROM businesses
+      ORDER BY created_at DESC
+      LIMIT 5
+    `).all();
+
+    return jsonResponse({
+      total,
+      thisMonth,
+      recentBusinesses: recentResult.results || []
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    return errorResponse('Failed to fetch stats', 500);
+  }
+}
+
+/**
  * Pages Function handler - exports onRequest for all HTTP methods
  */
 export async function onRequest(context: EventContext<Env, string, unknown>): Promise<Response> {
@@ -581,6 +764,16 @@ export async function onRequest(context: EventContext<Env, string, unknown>): Pr
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
     return handleOptions();
+  }
+
+  // POST /api/auth/verify - Verify admin password
+  if (pathname === '/api/auth/verify' && request.method === 'POST') {
+    return handleVerifyAuth(env, request);
+  }
+
+  // GET /api/stats - Get admin statistics
+  if (pathname === '/api/stats' && request.method === 'GET') {
+    return handleGetStats(env, request);
   }
 
   // GET /api/businesses - List all businesses
@@ -598,10 +791,23 @@ export async function onRequest(context: EventContext<Env, string, unknown>): Pr
     return handleGenerateReview(env, request);
   }
 
-  // GET /api/businesses/:slug - Get business by slug
+  // Business-specific routes with slug
   const slug = extractSlug(pathname);
-  if (slug && request.method === 'GET') {
-    return handleGetBusiness(env, slug);
+  if (slug) {
+    // GET /api/businesses/:slug - Get business by slug
+    if (request.method === 'GET') {
+      return handleGetBusiness(env, slug);
+    }
+
+    // PUT /api/businesses/:slug - Update business
+    if (request.method === 'PUT') {
+      return handleUpdateBusiness(env, request, slug);
+    }
+
+    // DELETE /api/businesses/:slug - Delete business
+    if (request.method === 'DELETE') {
+      return handleDeleteBusiness(env, request, slug);
+    }
   }
 
   // No matching route

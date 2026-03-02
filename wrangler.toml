@@ -10,3 +10,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "reviewpasta-db"
 database_id = "5808b971-372f-4160-98d0-f7da1759e06a"
+
+# Environment variables
+# ADMIN_PASSWORD: Set via Cloudflare dashboard or `wrangler secret put ADMIN_PASSWORD`
+# OPENROUTER_API_KEY: Set via Cloudflare dashboard or `wrangler secret put OPENROUTER_API_KEY`
