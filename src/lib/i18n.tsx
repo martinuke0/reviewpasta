@@ -108,6 +108,13 @@ interface Translations {
   descriptionUpdated: string;
   descriptionUpdateError: string;
   characterLimit: string;
+
+  // Place ID extraction
+  mapsUrl: string;
+  mapsUrlPlaceholder: string;
+  mapsUrlHelper: string;
+  placeIdExtracted: string;
+  placeIdNotFound: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -217,6 +224,13 @@ const translations: Record<Language, Translations> = {
     descriptionUpdated: 'Descriere actualizată!',
     descriptionUpdateError: 'Eroare la actualizare',
     characterLimit: 'Maxim 500 caractere',
+
+    // Place ID extraction
+    mapsUrl: 'URL Google Maps (Opțional)',
+    mapsUrlPlaceholder: 'Lipește URL-ul Google Maps pentru a completa automat Place ID',
+    mapsUrlHelper: 'Lipește un link Google Maps și vom extrage Place ID-ul automat',
+    placeIdExtracted: 'Place ID extras cu succes!',
+    placeIdNotFound: 'Nu s-a găsit Place ID în URL',
   },
   en: {
     // Home page
@@ -324,6 +338,13 @@ const translations: Record<Language, Translations> = {
     descriptionUpdated: 'Description updated!',
     descriptionUpdateError: 'Failed to update',
     characterLimit: '500 characters max',
+
+    // Place ID extraction
+    mapsUrl: 'Google Maps URL (Optional)',
+    mapsUrlPlaceholder: 'Paste Google Maps URL to auto-fill Place ID',
+    mapsUrlHelper: "Paste a Google Maps link and we'll extract the Place ID for you",
+    placeIdExtracted: 'Place ID extracted successfully!',
+    placeIdNotFound: 'Could not find Place ID in URL',
   },
 };
 
